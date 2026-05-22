@@ -130,11 +130,37 @@ Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to 
 
 ## 📦 Deployment
 
-This is a standard Next.js app deployable to Vercel, Netlify, or any Node.js host:
+This is a standard Next.js app deployable to Vercel.
 
-```bash
-npm run build
-npm start
-```
+Open [https://axipays-payment-gateway-seven.vercel.app?_vercel_share=OR6fS8F9PWXeqVRysN8JfVBHCBZr6TTQ) — you'll be redirected to the checkout page.
 
-Ensure `NEXT_PUBLIC_API_BASE_URL` is set in your deployment environment variables.
+
+### Why is the data dummy?
+The application currently uses **dummy/mock transaction data** because the payment API has limitations related to API key access and testing environments. Real transaction data is not available in the development/testing phase.
+
+### Why is the deployed application loading slow for the dashboard ?
+- **API Key Restrictions:** Some API requests may respond slower due to rate limits or API key restrictions from the provider.
+- **Deployment on Vercel:** The deployed version may feel slightly slower because of **cold starts**, serverless function delays, or free-tier limitations on Vercel.
+
+---
+
+## Why We Used Axios Instead of Fetch
+
+We used **Axios** instead of the native `fetch()` API because it provides several advantages:
+
+- **Built-in Interceptors**  
+  We use interceptors to normalize and handle API error messages consistently.
+
+- **Automatic JSON Parsing**  
+  No need to manually call `.json()` on every response.
+
+- **Timeout Configuration**  
+  Easier request timeout handling to prevent long waits.
+
+- **Base URL Configuration**  
+  Centralized API endpoint management in one place.
+
+- **Cleaner Header Management**  
+  Makes it easier to attach custom headers like the `Hash` header required for requests.
+
+
