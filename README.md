@@ -1,4 +1,4 @@
-# AXIPAYS — Payment Platform
+# AXIPAYS — Payment Gateway
 
 A full-stack Next.js 16 payment platform with a dark premium UI theme, featuring a checkout page with 3D animated card preview and a real-time transaction dashboard.
 
