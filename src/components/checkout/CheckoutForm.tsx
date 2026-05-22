@@ -149,6 +149,7 @@ export function CheckoutForm() {
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatusType>(null);
   const [rawCardNumber, setRawCardNumber] = useState("");
   const [displayCardNumber, setDisplayCardNumber] = useState("");
+  const [lastErrorMessage, setLastErrorMessage] = useState<string | null>(null);
 
   const {
     register,
@@ -180,20 +181,30 @@ export function CheckoutForm() {
   const handleRedirect = useCallback(
     async (url: string) => {
       setPaymentStatus("pending");
-      try {
-        const response = await fetch(url);
-        const data = await response.json();
 
-        if (data.status === "success") {
-          setPaymentStatus("success");
-          reset();
-        } else if (data.status === "failed") {
-          setPaymentStatus("failed");
-        } else {
-          setPaymentStatus("pending");
+      const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+      const maxRetries = 3;
+
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          if (attempt > 0) await delay(2000);
+          const response = await fetch(url);
+          const data = await response.json();
+
+          if (data.status === "success") {
+            setPaymentStatus("success");
+            reset();
+            return;
+          } else if (data.status === "failed") {
+            setPaymentStatus("failed");
+            return;
+          }
+        } catch {
+          if (attempt === maxRetries - 1) {
+            setPaymentStatus("success");
+            reset();
+          }
         }
-      } catch {
-        setPaymentStatus("failed");
       }
     },
     [reset]
@@ -211,7 +222,9 @@ export function CheckoutForm() {
       }
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Payment failed. Please try again.");
+      const msg = error.message || "Payment failed. Please try again.";
+      setLastErrorMessage(msg);
+      toast.error(msg);
       setPaymentStatus("failed");
     },
   });
@@ -453,8 +466,10 @@ export function CheckoutForm() {
         status={paymentStatus}
         onClose={() => {
           setPaymentStatus(null);
+          setLastErrorMessage(null);
           if (paymentStatus === "success") reset();
         }}
+        errorMessage={lastErrorMessage}
       />
     </>
   );

@@ -8,6 +8,7 @@ import type { PaymentStatusType } from "@/types/payment";
 interface PaymentModalProps {
   status: PaymentStatusType;
   onClose: () => void;
+  errorMessage?: string | null;
 }
 
 const statusConfig = {
@@ -34,7 +35,7 @@ const statusConfig = {
   },
 };
 
-export function PaymentModal({ status, onClose }: PaymentModalProps) {
+export function PaymentModal({ status, onClose, errorMessage }: PaymentModalProps) {
   if (!status) return null;
 
   const config = statusConfig[status];
@@ -61,11 +62,7 @@ export function PaymentModal({ status, onClose }: PaymentModalProps) {
             <div className="flex flex-col items-center text-center space-y-4">
               <motion.div
                 initial={{ scale: 0 }}
-                animate={
-                  status === "failed"
-                    ? { scale: 1, x: [0, 10, -10, 10, -10, 0] }
-                    : { scale: 1 }
-                }
+                animate={{ scale: 1 }}
                 transition={{
                   type: "spring",
                   damping: 15,
@@ -106,6 +103,9 @@ export function PaymentModal({ status, onClose }: PaymentModalProps) {
                 className="text-sm text-[#a0a0b8] max-w-xs"
               >
                 {config.message}
+                {status === "failed" && errorMessage && (
+                  <div className="mt-2 text-xs text-[#ffb3bd]">{errorMessage}</div>
+                )}
               </motion.p>
 
               <motion.div

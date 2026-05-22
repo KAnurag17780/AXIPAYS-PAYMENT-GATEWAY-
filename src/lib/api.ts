@@ -7,6 +7,18 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://payment-assignment.onrender.com";
 
+// Helpful runtime notice for deployments (e.g., Vercel): if the env var
+// isn't explicitly set in the environment, warn so deploys don't silently use
+// the public default backend which might be unreachable or blocked by CORS.
+if (typeof window !== "undefined") {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL === undefined) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "NEXT_PUBLIC_API_BASE_URL is not set — using the default API base URL. Configure this in your Vercel environment variables if needed."
+    );
+  }
+}
+
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -18,6 +30,14 @@ export const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Log response details to aid debugging (status, data)
+    // eslint-disable-next-line no-console
+    console.error("API response error:", {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
+
     const message =
       error.response?.data?.message ||
       error.response?.data?.error ||
@@ -35,6 +55,7 @@ export async function initiatePayment(
 
   const response = await apiClient.post<PaymentResponse>(
     "/initiate-payment",
+    // include both `cardCVC` and `cvv` to match different backend expectations
     {
       orderId: payload.orderId,
       cardHolderName: payload.cardHolderName,
@@ -43,6 +64,7 @@ export async function initiatePayment(
       expiryMonth: payload.expiryMonth,
       expiryYear: payload.expiryYear,
       cardCVC: payload.cvv,
+      cvv: payload.cvv,
       amount: payload.amount,
       currency: payload.currency,
       country: payload.country,
